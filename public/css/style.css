@@ -36,6 +36,16 @@ h2 {
   font-size: 2.25rem;
 }
 
+.center {
+  text-align: center;
+}
+.large {
+  font-size: 1.8rem;
+}
+.small {
+  font-size: 0.7rem;
+}
+
 main div ul:last-of-type:has(li a) {
   align-content: space-around;
   align-items: center;

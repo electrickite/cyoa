@@ -1,15 +1,14 @@
-const mainEl = document.querySelector('main');
-const contentEl = document.querySelector('main div');
 const reTitle = /^# ([^\r\n]+)/m;
 const reIntro = /^# .*(?:\r?\n)([\s\S]*?)(?=\r?\n\s{0,3}(?:-{3,}|\*{3,}|_{3,})\s*$)/m;
-const rePage = /^## [^\r\n]*(?:\r?\n[\s\S]*?)(?=\r?\n\s{0,3}(?:-{3,}|\*{3,}|_{3,})\s*$)/gm;
+const rePage = /^## [^\r\n]*(?:\r?\n[\s\S]*?)(?=\r?\n\s{0,3}(?:-{3,})\s*$)/gm;
 
-let title;
+let mainEl;
+let contentEl;
 let pages = new Map();
 
 const tokenizer = {
   link(src) {
-    const match = src.match(/^\[(.+)\](?=\s|$)/);
+    const match = src.match(/^\[([^\]]+)\](?=[^\[\(]|$)/);
     if (match) {
       const rawId = markedGfmHeadingId.unescape(match[1])
         .trim()
@@ -33,6 +32,8 @@ const tokenizer = {
 
 marked.use(markedGfmHeadingId.gfmHeadingId());
 marked.use(markedCustomHeadingId());
+marked.use(markedSmartypantsLite.markedSmartypantsLite());
+marked.use(markedDirective.createDirectives());
 marked.use({ tokenizer });
 
 function createContentFragment(md) {
@@ -55,9 +56,48 @@ function showContent(id) {
   }
 }
 
-async function showStory() {
+function initPage(title) {
   if (!showHeadings) {
     document.body.classList.add('noheadings');
+  }
+  document.title = title;
+  mainEl.classList.add('cover');
+  const h1 = document.createElement('h1');
+  h1.textContent = title;
+  const nav = document.createElement('nav');
+  nav.innerHTML = '<a href="#" id="up">Cover</a> / <a href="#" id="back">Back</a>';
+  contentEl = document.createElement('div');
+  contentEl.setAttribute('tabindex', '-1');
+  mainEl.appendChild(nav);
+  mainEl.appendChild(h1);
+  mainEl.appendChild(document.createElement('hr'));
+  mainEl.appendChild(contentEl);
+
+  window.addEventListener('hashchange', () => {
+    showContent(location.hash ? location.hash : 'cover');
+  });
+
+  document.getElementById('up').addEventListener('click', (e) => {
+    e.preventDefault();
+    history.pushState('', document.title, location.pathname + location.search);
+    showContent('cover');
+  });
+  document.getElementById('back').addEventListener('click', (e) => {
+    e.preventDefault();
+    history.back();
+  });
+}
+
+function showError(error) {
+  mainEl.innerHTML = `<p class="notice">${error}</p>`;
+}
+
+async function showStory(el) {
+  if (el instanceof HTMLElement) {
+    mainEl = el;
+  } else {
+    mainEl = document.createElement('main');
+    document.body.prepend(mainEl);
   }
 
   let text;
@@ -69,18 +109,14 @@ async function showStory() {
     text = await response.text();
   } catch (err) {
     console.error(err);
+    showError('Unable to load story!');
     return;
   }
 
   const titleMatch = text.match(reTitle);
   const introMatch = text.match(reIntro);
   if (titleMatch && introMatch) {
-    title = titleMatch[1];
-    document.title = title;
-    const h1 = document.createElement('h1');
-    h1.textContent = title;
-    mainEl.prepend(document.createElement('hr'));
-    mainEl.prepend(h1);
+    initPage(titleMatch[1]);
     pages.set('cover', createContentFragment(introMatch[1]));
 
     const pageMatches = text.match(rePage) || [];
@@ -95,21 +131,9 @@ async function showStory() {
     }
   } else {
     console.log('Story requires title and intro');
+    showError('Unable to load story!');
+    return;
   }
 
   showContent(location.hash ? location.hash : 'cover');
 }
-
-window.addEventListener('hashchange', () => {
-  showContent(location.hash ? location.hash : 'cover');
-});
-
-document.getElementById('up').addEventListener('click', (e) => {
-  e.preventDefault();
-  history.pushState('', document.title, location.pathname + location.search);
-  showContent('cover');
-});
-document.getElementById('back').addEventListener('click', (e) => {
-  e.preventDefault();
-  history.back();
-});

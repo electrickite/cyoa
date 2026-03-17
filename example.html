@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#212121" media="(prefers-color-scheme: dark)">
+    <link rel="stylesheet" href="./css/simple.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <title>Choose Your Own Adventure</title>
+  </head>
+  <body>
+    <script src="./js/marked.umd.js"></script>
+    <script src="./js/dep.bundle.js"></script>
+    <script src="./js/marked-extensions.js"></script>
+    <script src="./js/story.js"></script>
+    <script>
+      const showHeadings = false;
+      const storyFile = './content/example.md';
+      showStory();
+    </script>
+  </body>
+</html>
