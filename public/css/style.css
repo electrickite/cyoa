@@ -81,12 +81,3 @@ main div ul:last-of-type:has(li a) a:hover {
   color: var(--accent);
   cursor: pointer;
 }
-
-@media only screen and (max-width: 720px) {
-  main div ul:last-of-type:has(li a) a {
-    border: none;
-    padding: 0;
-    text-decoration: underline;
-    line-height: 1;
-  }
-}
